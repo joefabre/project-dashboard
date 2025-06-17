@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joe's Status Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Joe's Status Dashboard</h1>
+        <nav>
+            <button id="add-project-btn" class="btn-primary">Add New Project</button>
+            <button onclick="window.location.href='archived.html'" class="btn-secondary">📦 View Archived</button>
+            <button id="export-btn" class="btn-secondary">📤 Export Data</button>
+            <button id="import-btn" class="btn-secondary">📥 Import Data</button>
+            <button id="help-btn" class="btn-secondary">Help</button>
+            <input type="file" id="import-file" accept=".json" style="display: none;">
+        </nav>
+    </header>
+
+    <main>
+        <!-- Project Status Summary -->
+        <div id="project-status-summary" class="status-summary">
+            <div class="status-overview">
+                <h2>Project Overview</h2>
+                <div class="status-stats" id="status-stats">
+                    <!-- Status statistics will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+        
+        <div id="projects-container" class="projects-grid">
+            <!-- Project cards will be dynamically added here -->
+        </div>
+    </main>
+
+    <!-- News Ticker -->
+    <div id="news-ticker" class="ticker-container">
+        <div class="ticker-content">
+            <span>📰 Welcome to Joe's Status Dashboard • Stay updated with your project progress • Configure cards to track your tasks</span>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-item">
+                <span id="current-date"></span>
+            </div>
+            <div class="footer-item">
+                <span id="network-status">🟢 Online</span>
+            </div>
+            <div class="footer-item">
+                <a href="help.html" target="_blank">📖 Help Documentation</a>
+            </div>
+            <div class="footer-item">
+                <span>Version 1.0</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Project Modal -->
+    <div id="project-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modal-title">Add New Project</h2>
+            <form id="project-form">
+                <div class="form-group">
+                    <label for="project-title">Project Title:</label>
+                    <input type="text" id="project-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="project-details">Project Details:</label>
+                    <textarea id="project-details" rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="start-date">Start Date:</label>
+                        <input type="date" id="start-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="due-date">Due Date:</label>
+                        <input type="date" id="due-date" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="project-status">Status:</label>
+                    <select id="project-status">
+                        <option value="not-started">Not Started</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="on-hold">On Hold</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="project-dependencies">Project Dependencies:</label>
+                    <select id="project-dependencies" multiple size="3">
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                    <small style="color: #666; font-size: 0.85rem;">Select other projects that must be completed before this one can start. Hold Ctrl/Cmd to select multiple.</small>
+                </div>
+                <div class="form-group">
+                    <label for="project-steps">Project Steps:</label>
+                    <textarea id="project-steps" rows="4" placeholder="Enter each step on a new line&#10;Example:&#10;Research and planning&#10;Design mockups&#10;Develop prototype&#10;Testing and feedback&#10;Final implementation"></textarea>
+                    <small style="color: #666; font-size: 0.85rem;">Enter each project step on a separate line. These will become checkboxes you can interact with to track progress.</small>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Save Project</button>
+                    <button type="button" id="cancel-btn" class="btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+

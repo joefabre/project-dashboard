@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archived Projects - Joe's Status Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>📦 Archived Projects</h1>
+        <nav>
+            <button onclick="window.location.href='index.html'" class="btn-secondary">← Back to Dashboard</button>
+            <button id="export-archived-btn" class="btn-secondary">📤 Export Archived</button>
+            <button id="help-btn" class="btn-secondary">Help</button>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Archive Status Summary -->
+        <div id="archive-status-summary" class="status-summary">
+            <div class="status-overview">
+                <h2>Archive Overview</h2>
+                <div class="status-stats" id="archive-stats">
+                    <!-- Archive statistics will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+        
+        <div id="archived-projects-container" class="projects-grid">
+            <!-- Archived project cards will be dynamically added here -->
+        </div>
+    </main>
+
+    <!-- News Ticker -->
+    <div id="news-ticker" class="ticker-container">
+        <div class="ticker-content">
+            <span>📦 Archived Projects • Review your completed work • Unarchive projects to work on them again</span>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-item">
+                <span id="current-date"></span>
+            </div>
+            <div class="footer-item">
+                <span id="network-status">🟢 Online</span>
+            </div>
+            <div class="footer-item">
+                <a href="help.html" target="_blank">📖 Help Documentation</a>
+            </div>
+            <div class="footer-item">
+                <span>Version 1.0</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="archived-script.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help - Joe's Status Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+        
+        h2 {
+            color: #34495e;
+            margin-top: 2rem;
+            border-left: 4px solid #667eea;
+            padding-left: 1rem;
+        }
+        
+        h3 {
+            color: #2c3e50;
+            margin-top: 1.5rem;
+        }
+        
+        code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .feature-box {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin: 1rem 0;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin: 0.25rem;
+        }
+        
+        .status-not-started {
+            background: #ffeaa7;
+            color: #d63031;
+        }
+        
+        .status-in-progress {
+            background: #74b9ff;
+            color: #0984e3;
+        }
+        
+        .status-completed {
+            background: #55efc4;
+            color: #00b894;
+        }
+        
+        .status-on-hold {
+            background: #fd79a8;
+            color: #e84393;
+        }
+        
+        ul {
+            padding-left: 1.5rem;
+        }
+        
+        li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .tip {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .warning {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>📖 Joe's Status Dashboard - Help Documentation</h1>
+    
+    <div class="feature-box">
+        <h2>🚀 Getting Started</h2>
+        <p>Welcome to Joe's Status Dashboard! This application helps you track and manage your project progress with visual charts and organized task cards.</p>
+        
+        <h3>Key Features:</h3>
+        <ul>
+            <li>📊 Interactive project cards with step-by-step progress tracking</li>
+            <li>✅ Interactive checkboxes for project steps</li>
+            <li>📈 Automatic progress calculation based on completed steps</li>
+            <li>🔗 Project dependencies to link related projects</li>
+            <li>📅 Date tracking with deadline calculations</li>
+            <li>📰 Live news ticker with dashboard tips and local news updates</li>
+            <li>🌐 Network status monitoring</li>
+            <li>💾 Automatic data persistence in browser storage</li>
+        </ul>
+    </div>
+    
+    <div class="feature-box">
+        <h2>➕ Adding New Projects</h2>
+        <p>To create a new project:</p>
+        <ol>
+            <li>Click the <strong>"Add New Project"</strong> button in the header</li>
+            <li>Fill out the project form:
+                <ul>
+                    <li><strong>Project Title:</strong> A descriptive name for your project</li>
+                    <li><strong>Project Details:</strong> Additional information or description</li>
+                    <li><strong>Start Date:</strong> When the project begins</li>
+                    <li><strong>Due Date:</strong> Project deadline</li>
+                    <li><strong>Status:</strong> Current project state</li>
+                    <li><strong>Project Steps:</strong> Enter each step on a new line (these become interactive checkboxes)</li>
+                </ul>
+            </li>
+            <li>Click <strong>"Save Project"</strong> to add it to your dashboard</li>
+        </ol>
+        
+        <div class="tip">
+            <strong>💡 Tip:</strong> The start date is automatically set to today's date when creating new projects.
+        </div>
+    </div>
+    
+    <div class="feature-box">
+        <h2>📊 Project Status Types</h2>
+        <p>Each project can have one of four status types:</p>
+        
+        <div style="margin: 1rem 0;">
+            <span class="status-badge status-not-started">NOT STARTED</span>
+            <p>Project hasn't begun yet</p>
+        </div>
+        
+        <div style="margin: 1rem 0;">
+            <span class="status-badge status-in-progress">IN PROGRESS</span>
+            <p>Currently working on the project</p>
+        </div>
+        
+        <div style="margin: 1rem 0;">
+            <span class="status-badge status-completed">COMPLETED</span>
+            <p>Project is finished</p>
+        </div>
+        
+        <div style="margin: 1rem 0;">
+            <span class="status-badge status-on-hold">ON HOLD</span>
+            <p>Project is temporarily paused</p>
+        </div>
+    </div>
+    
+    <div class="feature-box">
+        <h2>✏️ Editing Projects</h2>
+        <p>To modify an existing project:</p>
+        <ol>
+            <li>Find the project card you want to edit</li>
+            <li>Click the <strong>"✏️ Edit"</strong> button at the bottom of the card</li>
+            <li>Update any fields in the form</li>
+            <li>Click <strong>"Save Project"</strong> to apply changes</li>
+        </ol>
+        
+        <div class="warning">
+            <strong>⚠️ Note:</strong> Make sure the start date is not after the due date when editing.
+        </div>
+    </div>
+    
+    <div class="feature-box">
+        <h2>🗑️ Deleting Projects</h2>
+        <p>To remove a project from your dashboard:</p>
+        <ol>
+            <li>Find the project card you want to delete</li>
+            <li>Click the <strong>"🗑️ Delete"</strong> button</li>
+            <li>Confirm the deletion in the popup dialog</li>
+        </ol>
+        
+        <div class="warning">
+            <strong>⚠️ Warning:</strong> Deleting a project is permanent and cannot be undone.
+        </div>
+    </div>
+    
+    <div class="feature-box">
+        <h2>✅ Interactive Project Steps</h2>
+        <p>Each project card displays an interactive checklist showing your project steps:</p>
+        <ul>
+            <li><strong>Project Steps:</strong> Each step you defined appears as a checkbox</li>
+            <li><strong>Check/Uncheck:</strong> Click checkboxes to mark steps as complete or incomplete</li>
+            <li><strong>Progress Counter:</strong> Shows "X/Y completed" at the top</li>
+            <li><strong>Visual Feedback:</strong> Completed steps show strikethrough text and reduced opacity</li>
+            <li><strong>Auto-Save:</strong> Changes are saved automatically when you click checkboxes</li>
+            <li><strong>Auto-Capitalization:</strong> First letter of each step is automatically capitalized when saved</li>
+        </ul>
+        
+        <p>The progress percentage and progress bar update automatically based on completed steps. For example, if you have 4 steps and complete 2 of them, your progress will show 50%.</p>
+        
+        <div class="tip">
+            <strong>💡 Tip:</strong> Break down your projects into specific, actionable steps for better progress tracking!
+        </div>
+    </div>
+    
+    <div class="feature-box">
+        <h2>🎉 Auto-Completion and Archiving</h2>
+        <p>When you complete all steps in a project, the dashboard automatically handles the completion process:</p>
+        
+        <h3>📋 Completion Process:</h3>
+        <ol>
+            <li><strong>Check the last box:</strong> When you check the final uncompleted step</li>
+            <li><strong>Auto-completion:</strong> Project status automatically changes to "Completed"</li>
+            <li><strong>Celebration notification:</strong> See a success message with project name</li>
+            <li><strong>Auto-archiving:</strong> After 1.5 seconds, project moves to archived section</li>
+        </ol>
+        
+        <h3>🔄 Reversibility:</h3>
+        <ul>
+            <li>If you uncheck a step after completion, the project returns to "In Progress" status</li>
+            <li>You can manually unarchive projects from the archived projects page</li>
+            <li>All step completion status is preserved when editing projects</li>
+        </ul>
+        
+        <div class="tip">
+            <strong>🎊 Pro Tip:</strong> The moment you check that final box, you'll see a celebration - enjoy your accomplishment before the project is automatically organized into your archive!
+        </div>
+    </div>
+    
+    <div class="feature-box">
+        <h2>🔗 Project Dependencies</h2>
+        <p>Link projects together by setting up dependencies - projects that must be completed before another one can start:</p>
+        
+        <h3>🛠️ Setting Up Dependencies:</h3>
+        <ol>
+            <li>Create or edit a project</li>
+            <li>In the <strong>"Project Dependencies"</strong> dropdown, select one or more projects that must be completed first</li>
+            <li>Hold <code>Ctrl</code> (Windows/Linux) or <code>Cmd</code> (Mac) to select multiple dependencies</li>
+            <li>Save the project</li>
+        </ol>
+        
+        <h3>📊 Dependency Status Indicators:</h3>
+        <ul>
+            <li><strong>✅ Ready:</strong> All dependencies are completed or archived - project can proceed</li>
+            <li><strong>⚠️ Blocked:</strong> One or more dependencies are still incomplete - project should wait</li>
+        </ul>
+        
+        <h3>📝 Dependency Display:</h3>
+        <p>Each dependency shows:</p>
+        <ul>
+            <li><strong>Status Icon:</strong> ✅ completed, 🔄 in-progress, ⏸️ on-hold, ⛔ not-started, 📦 archived</li>
+            <li><strong>Project Name:</strong> The title of the dependent project</li>
+            <li><strong>Status Text:</strong> Current status of the dependency</li>
+        </ul>
+        
+        <div class="tip">
+            <strong>💡 Tip:</strong> Dependencies help you visualize project workflows and identify which projects are ready to start versus which need to wait for other work to complete.
+        </div>
+        
+        <div class="warning">
+            <strong>⚠️ Note:</strong> You cannot select the project you're currently editing as a dependency (prevents circular dependencies).
+        </div>
+    </div>
+    
+    <div class="feature-box">
+        <h2>📅 Date Tracking</h2>
+        <p>The dashboard automatically calculates:</p>
+        <ul>
+            <li><strong>Days remaining:</strong> Until the due date</li>
+            <li><strong>Overdue status:</strong> If past the due date</li>
+            <li><strong>"Due today":</strong> For projects due on the current date</li>
+        </ul>
+    </div>
+    
+    <div class="feature-box">
+        <h2>📰 News Ticker</h2>
+        <p>The ticker at the bottom of the page displays:</p>
+        <ul>
+            <li><strong>Dashboard Tips:</strong> Helpful messages about using the dashboard</li>
+            <li><strong>Local News:</strong> Mock local news updates (refreshes every 30 minutes)</li>
+            <li><strong>Motivational Messages:</strong> Tips for staying productive</li>
+        </ul>
+        
+        <p>The ticker updates every 15 seconds and scrolls slowly across the bottom. In a production environment, you could connect this to a real news API for live local news.</p>
+        
+        <div class="tip">
+            <strong>💡 Tip:</strong> The ticker combines dashboard-specific messages with local news to keep you informed while you work.
+        </div>
+    </div>
+    
+    <div class="feature-box">
+        <h2>🌐 Footer Information</h2>
+        <p>The footer displays:</p>
+        <ul>
+            <li><strong>📅 Current Date & Time:</strong> Updates every minute</li>
+            <li><strong>🟢 Network Status:</strong> Shows online/offline status</li>
+            <li><strong>📖 Help Link:</strong> Opens this documentation</li>
+        </ul>
+    </div>
+    
+    <div class="feature-box">
+        <h2>💾 Data Storage</h2>
+        <p>Your projects are automatically saved to your browser's local storage. This means:</p>
+        <ul>
+            <li>✅ Data persists between browser sessions</li>
+            <li>✅ No internet connection required</li>
+            <li>⚠️ Data is specific to this browser and device</li>
+            <li>⚠️ Clearing browser data will remove projects</li>
+        </ul>
+    </div>
+    
+    <div class="feature-box">
+        <h2>📤📥 Export and Import Data</h2>
+        <p>To backup or transfer your projects between devices:</p>
+        
+        <h3>📤 Exporting Data:</h3>
+        <ol>
+            <li>Click the <strong>"📤 Export Data"</strong> button in the header</li>
+            <li>A JSON file will be downloaded automatically with the current date in the filename</li>
+            <li>Save this file in a secure location as your backup</li>
+        </ol>
+        
+        <h3>📥 Importing Data:</h3>
+        <ol>
+            <li>Click the <strong>"📥 Import Data"</strong> button in the header</li>
+            <li>Select a previously exported JSON file</li>
+            <li>Confirm that you want to replace your current data</li>
+            <li>Your projects will be loaded from the backup file</li>
+        </ol>
+        
+        <div class="warning">
+            <strong>⚠️ Important:</strong> Importing data will replace all your current projects. Make sure to export your current data first if you want to keep it!
+        </div>
+        
+        <div class="tip">
+            <strong>💡 Tip:</strong> Export your data regularly to avoid losing your project information, especially before major browser updates or when switching devices.
+        </div>
+    </div>
+    
+    <div class="feature-box">
+        <h2>⌨️ Keyboard Shortcuts</h2>
+        <ul>
+            <li><code>Escape</code> - Close any open modal dialog</li>
+            <li>Click outside modal - Close the modal</li>
+        </ul>
+    </div>
+    
+    <div class="feature-box">
+        <h2>📱 Mobile Support</h2>
+        <p>The dashboard is fully responsive and works on:</p>
+        <ul>
+            <li>Desktop computers</li>
+            <li>Tablets</li>
+            <li>Mobile phones</li>
+        </ul>
+        
+        <p>The layout automatically adjusts for smaller screens.</p>
+    </div>
+    
+    <div class="feature-box">
+        <h2>🔧 Troubleshooting</h2>
+        
+        <h3>Projects not saving?</h3>
+        <ul>
+            <li>Check that JavaScript is enabled in your browser</li>
+            <li>Ensure you have sufficient browser storage available</li>
+            <li>Try refreshing the page</li>
+        </ul>
+        
+        <h3>Checkboxes not working?</h3>
+        <ul>
+            <li>Check that JavaScript is enabled in your browser</li>
+            <li>Try refreshing the page</li>
+            <li>Ensure you're using a modern browser that supports all features</li>
+        </ul>
+        
+        <h3>Layout issues?</h3>
+        <ul>
+            <li>Try zooming to 100% in your browser</li>
+            <li>Clear browser cache and reload</li>
+            <li>Ensure you're using a modern browser</li>
+        </ul>
+    </div>
+    
+    <div class="feature-box">
+        <h2>📝 Creating Effective Project Steps</h2>
+        <p>To get the most out of the checkbox tracking feature:</p>
+        <ul>
+            <li><strong>Be Specific:</strong> Write clear, actionable steps (e.g., "Research competitor pricing" instead of "Research")</li>
+            <li><strong>Break It Down:</strong> Divide large tasks into smaller, manageable steps</li>
+            <li><strong>Keep It Sequential:</strong> Order steps logically from start to finish</li>
+            <li><strong>Make It Measurable:</strong> Each step should have a clear completion criteria</li>
+            <li><strong>Optimal Length:</strong> Aim for 3-8 steps per project for best tracking</li>
+        </ul>
+        
+        <div class="tip">
+            <strong>💡 Example:</strong><br>
+            Instead of: "Build website"<br>
+            Use:<br>
+            • Set up development environment<br>
+            • Create wireframes and design mockups<br>
+            • Develop homepage and navigation<br>
+            • Build contact and about pages<br>
+            • Test on different devices<br>
+            • Deploy to production server
+        </div>
+    </div>
+    
+    <div class="feature-box">
+        <h2>🎯 Tips for Best Results</h2>
+        <ul>
+            <li>Keep project titles concise but descriptive</li>
+            <li>Use realistic start and due dates</li>
+            <li>Review and update project status as work progresses</li>
+            <li>Add detailed descriptions to help remember project context</li>
+            <li>Check off steps as you complete them for accurate progress tracking</li>
+            <li>Edit projects to add new steps if the scope changes</li>
+            <li>Click the 🔒 Archived stat card in the overview to view completed projects</li>
+            <li>Use the "View Archived" button to review your project history</li>
+        </ul>
+    </div>
+    
+    <div class="feature-box">
+        <h2>📞 Need More Help?</h2>
+        <p>This dashboard is designed to be intuitive and easy to use. If you encounter any issues or have suggestions for improvements, the interface provides clear feedback and validation messages to guide you.</p>
+        
+        <p>Remember to regularly backup your important project data by noting down key information, as the dashboard stores everything locally in your browser.</p>
+    </div>
+    
+    <hr style="margin: 2rem 0; border: none; border-top: 1px solid #ddd;">
+    
+    <p style="text-align: center; color: #666; font-size: 0.9rem;">
+        <strong>Joe's Status Dashboard</strong> - Stay organized, stay productive! 🚀
+    </p>
+    
+</body>
+</html>
+
