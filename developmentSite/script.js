@@ -33,6 +33,7 @@ class StatusDashboard {
         const exportBtn = document.getElementById('export-btn');
         const importBtn = document.getElementById('import-btn');
         const importFile = document.getElementById('import-file');
+        const printBtn = document.getElementById('print-btn');
 
         addBtn.addEventListener('click', () => this.openModal());
         closeBtn.addEventListener('click', () => this.closeModal());
@@ -40,6 +41,7 @@ class StatusDashboard {
         helpBtn.addEventListener('click', () => this.openHelp());
         exportBtn.addEventListener('click', () => this.exportData());
         importBtn.addEventListener('click', () => this.importData());
+        printBtn.addEventListener('click', () => this.printProjects());
         importFile.addEventListener('change', (e) => this.handleFileImport(e));
         
         // Close modal when clicking outside
@@ -577,15 +579,67 @@ class StatusDashboard {
         dateElement.textContent = `📅 ${dateString} - ${timeString}`;
     }
 
-    checkNetworkStatus() {
+    async checkNetworkStatus() {
         const statusElement = document.getElementById('network-status');
         
-        if (navigator.onLine) {
-            statusElement.innerHTML = '🟢 Online';
-            statusElement.style.color = '#00b894';
-        } else {
-            statusElement.innerHTML = '🔴 Offline';
-            statusElement.style.color = '#d63031';
+        if (!statusElement) {
+            console.error('Network status element not found');
+            return;
+        }
+        
+        try {
+            if (navigator.onLine) {
+                // Get connection information
+                const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+                let networkInfo = '🟢 Online';
+                
+                if (connection) {
+                    const type = connection.effectiveType || connection.type || 'unknown';
+                    const downlink = connection.downlink ? `${Math.round(connection.downlink * 10) / 10} Mbps` : '';
+                    
+                    // Map connection types to readable names
+                    const typeMap = {
+                        'slow-2g': '📶 2G (Slow)',
+                        '2g': '📶 2G',
+                        '3g': '📶 3G',
+                        '4g': '📶 4G/LTE',
+                        'wifi': '📶 WiFi',
+                        'ethernet': '🔌 Ethernet',
+                        'cellular': '📱 Cellular',
+                        'bluetooth': '🔵 Bluetooth',
+                        'wimax': '📡 WiMAX',
+                        'other': '🌐 Other',
+                        'unknown': '❓ Unknown'
+                    };
+                    
+                    const connectionType = typeMap[type] || `📶 ${type.toUpperCase()}`;
+                    networkInfo = `🟢 ${connectionType}`;
+                    
+                    if (downlink && downlink !== '0 Mbps') {
+                        networkInfo += ` (${downlink})`;
+                    }
+                    
+                    // Add data saver indicator
+                    if (connection.saveData) {
+                        networkInfo += ' 💾';
+                    }
+                } else {
+                    // Fallback for browsers without connection API
+                    // Try to determine if we're on WiFi vs cellular (very basic heuristic)
+                    networkInfo = '🟢 🌐 Connected';
+                }
+                
+                statusElement.innerHTML = networkInfo;
+                statusElement.style.color = '#00b894';
+                
+            } else {
+                statusElement.innerHTML = '🔴 Offline';
+                statusElement.style.color = '#d63031';
+            }
+        } catch (error) {
+            console.error('Error checking network status:', error);
+            statusElement.innerHTML = navigator.onLine ? '🟢 Online' : '🔴 Offline';
+            statusElement.style.color = navigator.onLine ? '#00b894' : '#d63031';
         }
     }
 
@@ -813,6 +867,320 @@ class StatusDashboard {
         event.target.value = '';
     }
     
+    printProjects() {
+        // Create a new window for printing
+        const printWindow = window.open('', '_blank');
+        
+        // Get current date for header
+        const currentDate = new Date().toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        // Get archived projects for complete overview
+        const archivedProjects = JSON.parse(localStorage.getItem('archivedProjects')) || [];
+        
+        // Generate print content
+        const printContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Project Status Report - ${currentDate}</title>
+                <style>
+                    body {
+                        font-family: 'Segoe UI', Arial, sans-serif;
+                        margin: 0;
+                        padding: 20px;
+                        color: #333;
+                        line-height: 1.4;
+                    }
+                    .header {
+                        text-align: center;
+                        margin-bottom: 30px;
+                        border-bottom: 2px solid #333;
+                        padding-bottom: 20px;
+                    }
+                    .header h1 {
+                        margin: 0;
+                        font-size: 28px;
+                        color: #2c3e50;
+                    }
+                    .header p {
+                        margin: 5px 0 0 0;
+                        color: #666;
+                        font-size: 14px;
+                    }
+                    .summary {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                        gap: 15px;
+                        margin-bottom: 30px;
+                        text-align: center;
+                    }
+                    .stat-box {
+                        border: 1px solid #ddd;
+                        padding: 15px;
+                        border-radius: 8px;
+                    }
+                    .stat-number {
+                        font-size: 24px;
+                        font-weight: bold;
+                        color: #2c3e50;
+                    }
+                    .stat-label {
+                        font-size: 12px;
+                        color: #666;
+                        text-transform: uppercase;
+                        margin-top: 5px;
+                    }
+                    .section {
+                        margin-bottom: 40px;
+                        page-break-inside: avoid;
+                    }
+                    .section h2 {
+                        color: #2c3e50;
+                        border-bottom: 1px solid #ddd;
+                        padding-bottom: 10px;
+                        margin-bottom: 20px;
+                    }
+                    .project {
+                        border: 1px solid #ddd;
+                        margin-bottom: 20px;
+                        padding: 15px;
+                        border-radius: 8px;
+                        page-break-inside: avoid;
+                    }
+                    .project-title {
+                        font-size: 18px;
+                        font-weight: bold;
+                        margin-bottom: 8px;
+                        color: #2c3e50;
+                    }
+                    .project-status {
+                        display: inline-block;
+                        padding: 4px 12px;
+                        border-radius: 12px;
+                        font-size: 12px;
+                        font-weight: bold;
+                        text-transform: uppercase;
+                        margin-bottom: 10px;
+                    }
+                    .status-not-started { background: #ffeaa7; color: #d63031; }
+                    .status-in-progress { background: #74b9ff; color: #0984e3; }
+                    .status-completed { background: #55efc4; color: #00b894; }
+                    .status-on-hold { background: #fd79a8; color: #e84393; }
+                    .project-details {
+                        margin-bottom: 10px;
+                        color: #666;
+                    }
+                    .project-dates {
+                        font-size: 12px;
+                        color: #666;
+                        margin-bottom: 15px;
+                    }
+                    .dependencies {
+                        margin-bottom: 15px;
+                    }
+                    .dependencies h4 {
+                        margin: 0 0 8px 0;
+                        font-size: 14px;
+                        color: #2c3e50;
+                    }
+                    .dependency-item {
+                        font-size: 12px;
+                        padding: 4px 8px;
+                        background: #f8f9fa;
+                        border-radius: 4px;
+                        margin-bottom: 4px;
+                        border-left: 3px solid #667eea;
+                    }
+                    .steps {
+                        margin-bottom: 15px;
+                    }
+                    .steps h4 {
+                        margin: 0 0 8px 0;
+                        font-size: 14px;
+                        color: #2c3e50;
+                    }
+                    .step {
+                        font-size: 12px;
+                        padding: 4px 0;
+                        display: flex;
+                        align-items: center;
+                    }
+                    .step-checkbox {
+                        width: 12px;
+                        height: 12px;
+                        border: 1px solid #333;
+                        margin-right: 8px;
+                        display: inline-block;
+                        text-align: center;
+                        line-height: 10px;
+                        font-size: 8px;
+                    }
+                    .step-completed {
+                        text-decoration: line-through;
+                        color: #666;
+                    }
+                    .progress-bar {
+                        width: 100%;
+                        height: 8px;
+                        background: #e9ecef;
+                        border-radius: 4px;
+                        overflow: hidden;
+                        margin-bottom: 5px;
+                    }
+                    .progress-fill {
+                        height: 100%;
+                        background: #667eea;
+                    }
+                    .progress-text {
+                        font-size: 12px;
+                        color: #666;
+                        text-align: right;
+                    }
+                    @media print {
+                        body { margin: 0; }
+                        .section { page-break-before: auto; }
+                        .project { page-break-inside: avoid; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>📊 Project Status Dashboard Report</h1>
+                    <p>Generated on ${currentDate}</p>
+                </div>
+                
+                ${this.generatePrintSummary()}
+                
+                ${this.projects.length > 0 ? `
+                <div class="section">
+                    <h2>📋 Active Projects (${this.projects.length})</h2>
+                    ${this.projects.map(project => this.generatePrintProject(project)).join('')}
+                </div>
+                ` : '<div class="section"><h2>📋 Active Projects</h2><p>No active projects</p></div>'}
+                
+                ${archivedProjects.length > 0 ? `
+                <div class="section">
+                    <h2>📦 Archived Projects (${archivedProjects.length})</h2>
+                    ${archivedProjects.map(project => this.generatePrintProject(project, true)).join('')}
+                </div>
+                ` : ''}
+            </body>
+            </html>
+        `;
+        
+        // Write content and print
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        
+        // Wait for content to load, then print
+        setTimeout(() => {
+            printWindow.print();
+            printWindow.close();
+        }, 500);
+        
+        // Show notification
+        this.showNotification('Print dialog opened! 🖨️', 'success');
+    }
+    
+    generatePrintSummary() {
+        const stats = this.getProjectStats();
+        const archivedCount = this.getArchivedCount();
+        
+        return `
+            <div class="summary">
+                <div class="stat-box">
+                    <div class="stat-number">${stats.total}</div>
+                    <div class="stat-label">Active Projects</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">${stats['not-started'] || 0}</div>
+                    <div class="stat-label">Not Started</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">${stats['in-progress'] || 0}</div>
+                    <div class="stat-label">In Progress</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">${stats['on-hold'] || 0}</div>
+                    <div class="stat-label">On Hold</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">${archivedCount}</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+            </div>
+        `;
+    }
+    
+    generatePrintProject(project, isArchived = false) {
+        const daysUntilDue = this.getDaysUntilDue(project.dueDate);
+        const statusClass = `status-${project.status.replace(' ', '-')}`;
+        
+        // Get dependencies for this project
+        let dependenciesHtml = '';
+        if (project.dependencies && project.dependencies.length > 0) {
+            const dependencyProjects = project.dependencies.map(depId => {
+                const depProject = this.projects.find(p => p.id === depId) || 
+                    (JSON.parse(localStorage.getItem('archivedProjects')) || []).find(p => p.id === depId);
+                return depProject;
+            }).filter(Boolean);
+            
+            if (dependencyProjects.length > 0) {
+                dependenciesHtml = `
+                    <div class="dependencies">
+                        <h4>📋 Dependencies:</h4>
+                        ${dependencyProjects.map(dep => `
+                            <div class="dependency-item">
+                                ${dep.title} (${dep.status?.replace('-', ' ') || 'Unknown'})
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+        }
+        
+        // Generate steps HTML
+        let stepsHtml = '';
+        if (project.steps && project.steps.length > 0) {
+            const completedSteps = project.steps.filter(step => step.completed).length;
+            stepsHtml = `
+                <div class="steps">
+                    <h4>📝 Steps (${completedSteps}/${project.steps.length} completed):</h4>
+                    ${project.steps.map(step => `
+                        <div class="step ${step.completed ? 'step-completed' : ''}">
+                            <span class="step-checkbox">${step.completed ? '✓' : ''}</span>
+                            ${step.text}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        return `
+            <div class="project">
+                <div class="project-title">${project.title}${isArchived ? ' 📦' : ''}</div>
+                <span class="project-status ${statusClass}">${project.status.replace('-', ' ')}</span>
+                ${project.details ? `<div class="project-details">${project.details}</div>` : ''}
+                <div class="project-dates">
+                    <strong>Start:</strong> ${this.formatDate(project.startDate)} | 
+                    <strong>Due:</strong> ${this.formatDate(project.dueDate)} (${daysUntilDue})
+                    ${isArchived && project.archivedAt ? `| <strong>Archived:</strong> ${this.formatDate(project.archivedAt)}` : ''}
+                </div>
+                ${dependenciesHtml}
+                ${stepsHtml}
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${project.progress || 0}%"></div>
+                </div>
+                <div class="progress-text">${project.progress || 0}% Complete</div>
+            </div>
+        `;
+    }
+    
     showNotification(message, type = 'info') {
         // Create notification element
         const notification = document.createElement('div');
@@ -858,4 +1226,15 @@ document.addEventListener('DOMContentLoaded', () => {
 // Handle online/offline events
 window.addEventListener('online', () => dashboard.checkNetworkStatus());
 window.addEventListener('offline', () => dashboard.checkNetworkStatus());
+
+// Handle connection changes for real-time network updates
+if ('connection' in navigator) {
+    navigator.connection.addEventListener('change', () => dashboard.checkNetworkStatus());
+}
+if ('mozConnection' in navigator) {
+    navigator.mozConnection.addEventListener('change', () => dashboard.checkNetworkStatus());
+}
+if ('webkitConnection' in navigator) {
+    navigator.webkitConnection.addEventListener('change', () => dashboard.checkNetworkStatus());
+}
 
