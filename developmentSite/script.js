@@ -124,6 +124,9 @@ class StatusDashboard {
         document.getElementById('due-date').value = project.dueDate;
         document.getElementById('project-status').value = project.status;
         
+        // Handle recurring project checkbox
+        document.getElementById('project-recurring').checked = project.isRecurring || false;
+        
         // Handle project dependencies
         const dependenciesSelect = document.getElementById('project-dependencies');
         const dependencies = project.dependencies || [];
@@ -155,6 +158,7 @@ class StatusDashboard {
             startDate: document.getElementById('start-date').value,
             dueDate: document.getElementById('due-date').value,
             status: document.getElementById('project-status').value,
+            isRecurring: document.getElementById('project-recurring').checked,
             dependencies: dependencies,
             steps: steps,
             progress: 0 // Will be calculated from completed steps
@@ -274,6 +278,33 @@ class StatusDashboard {
         if (step) {
             step.completed = !step.completed;
             project.progress = this.calculateProgress(project.steps);
+            
+            // Check if all steps are completed
+            const allStepsCompleted = project.steps.every(s => s.completed);
+            
+            if (allStepsCompleted && project.isRecurring) {
+                // For recurring projects, reset all steps and show notification
+                setTimeout(() => {
+                    project.steps.forEach(s => s.completed = false);
+                    project.progress = 0;
+                    project.status = 'in-progress'; // Reset status to in-progress
+                    this.saveToStorage();
+                    this.renderProjects();
+                    this.showNotification(`🔄 Recurring project "${project.title}" has been reset and is ready for the next cycle!`, 'success');
+                }, 1500); // 1.5 second delay like archiving
+                
+                // Show initial completion message
+                this.showNotification(`🎉 Great job! "${project.title}" completed successfully!`, 'success');
+            } else if (allStepsCompleted && !project.isRecurring) {
+                // For non-recurring projects, handle normal completion/archiving
+                project.status = 'completed';
+                setTimeout(() => {
+                    this.archiveProject(projectId);
+                }, 1500);
+                
+                this.showNotification(`🎉 Project "${project.title}" completed! Moving to archive...`, 'success');
+            }
+            
             this.saveToStorage();
             this.renderProjects();
         }
@@ -401,8 +432,9 @@ class StatusDashboard {
             <div class="project-card" data-project-id="${project.id}">
                 <div class="project-header">
                     <div>
-                        <h3 class="project-title">${project.title}</h3>
+                        <h3 class="project-title">${project.title}${project.isRecurring ? ' 🔄' : ''}</h3>
                         <span class="project-status ${statusClass}">${project.status.replace('-', ' ')}</span>
+                        ${project.isRecurring ? '<span class="recurring-badge">🔄 Recurring</span>' : ''}
                     </div>
                 </div>
                 
