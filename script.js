@@ -105,15 +105,26 @@ class StatusDashboard {
         const availableProjects = this.projects.filter(p => p.id !== currentProjectId);
         
         if (availableProjects.length === 0) {
-            dependenciesSelect.innerHTML = '<option disabled>No other projects available</option>';
+            dependenciesSelect.innerHTML = '<option disabled>No other projects or tasks available</option>';
             return;
         }
         
         availableProjects.forEach(project => {
-            const option = document.createElement('option');
-            option.value = project.id;
-            option.textContent = `${project.title} (${project.status.replace('-', ' ')})`;
-            dependenciesSelect.appendChild(option);
+            // Add project as dependency option
+            const projectOption = document.createElement('option');
+            projectOption.value = `project:${project.id}`;
+            projectOption.textContent = `${project.title} (Project - ${project.status.replace('-', ' ')})`;
+            dependenciesSelect.appendChild(projectOption);
+            
+            // Add project tasks as dependency options
+            if (project.steps && project.steps.length > 0) {
+                project.steps.forEach(step => {
+                    const taskOption = document.createElement('option');
+                    taskOption.value = `task:${project.id}:${step.id}`;
+                    taskOption.textContent = `  Task: ${step.text} (${step.completed ? 'Completed' : 'Pending'})`;
+                    dependenciesSelect.appendChild(taskOption);
+                });
+            }
         });
     }
     
@@ -134,19 +145,25 @@ class StatusDashboard {
             option.selected = dependencies.includes(option.value);
         });
         
-        // Handle project steps
+        // Handle project steps - preserve subtask formatting
         const steps = project.steps || [];
-        const stepsText = steps.map(step => step.text).join('\n');
+        const stepsText = steps.map(step => {
+            // If it's a sub-subtask, add the ++ prefix back
+            if (step.isSubSubtask) {
+                return '++ ' + step.text;
+            }
+            // If it's a subtask, add the + prefix back
+            else if (step.isSubtask) {
+                return '+ ' + step.text;
+            }
+            return step.text;
+        }).join('\n');
         document.getElementById('project-steps').value = stepsText;
     }
 
     saveProject() {
         const stepsText = document.getElementById('project-steps').value.trim();
-        const steps = stepsText ? stepsText.split('\n').filter(step => step.trim()).map((step, index) => ({
-            id: `step-${Date.now()}-${index}`,
-            text: step.trim(),
-            completed: false
-        })) : [];
+        const steps = this.parseStepsWithSubtasks(stepsText);
         
         // Get selected dependencies
         const dependenciesSelect = document.getElementById('project-dependencies');
@@ -270,12 +287,101 @@ class StatusDashboard {
         return Math.round((completedSteps / steps.length) * 100);
     }
     
+    hasUnmetDependencies(project) {
+        if (!project.dependencies || project.dependencies.length === 0) {
+            return false;
+        }
+        
+        return project.dependencies.some(depId => {
+            if (depId.startsWith('project:')) {
+                // Project dependency
+                const projectId = depId.replace('project:', '');
+                const depProject = this.projects.find(p => p.id === projectId);
+                if (!depProject) {
+                    // Check archived projects
+                    const archivedProjects = JSON.parse(localStorage.getItem('archivedProjects')) || [];
+                    const archivedProject = archivedProjects.find(p => p.id === projectId);
+                    return !archivedProject; // If not found in archived, it's unmet
+                }
+                return depProject.status !== 'completed';
+            } else if (depId.startsWith('task:')) {
+                // Task dependency
+                const [, projectId, taskId] = depId.split(':');
+                const depProject = this.projects.find(p => p.id === projectId) || 
+                    (JSON.parse(localStorage.getItem('archivedProjects')) || []).find(p => p.id === projectId);
+                if (depProject && depProject.steps) {
+                    const task = depProject.steps.find(s => s.id === taskId);
+                    return !task || !task.completed;
+                }
+                return true; // If task not found, consider it unmet
+            } else {
+                // Legacy project dependency
+                const depProject = this.projects.find(p => p.id === depId);
+                if (!depProject) {
+                    const archivedProjects = JSON.parse(localStorage.getItem('archivedProjects')) || [];
+                    const archivedProject = archivedProjects.find(p => p.id === depId);
+                    return !archivedProject;
+                }
+                return depProject.status !== 'completed';
+            }
+        });
+    }
+    
     toggleStep(projectId, stepId) {
         const project = this.projects.find(p => p.id === projectId);
         if (!project || !project.steps) return;
         
+        // Check if project has unmet dependencies before allowing task completion
+        const hasUnmetDependencies = this.hasUnmetDependencies(project);
+        
         const step = project.steps.find(s => s.id === stepId);
         if (step) {
+            // If trying to complete a task but dependencies are not met, block it
+            if (!step.completed && hasUnmetDependencies) {
+                this.showNotification('Cannot complete tasks while project dependencies are not met. Complete dependencies first.', 'error');
+                return;
+            }
+            
+            // Check completion logic based on task hierarchy
+            if (!step.completed) {
+                // For parent tasks (level 0), check all subtasks and sub-subtasks
+                if (!step.isSubtask && step.subtasks && step.subtasks.length > 0) {
+                    const allChildrenCompleted = step.subtasks.every(subtaskId => {
+                        const subtask = project.steps.find(s => s.id === subtaskId);
+                        if (!subtask || !subtask.completed) {
+                            return false;
+                        }
+                        
+                        // If this subtask has sub-subtasks, check them too
+                        if (subtask.subtasks && subtask.subtasks.length > 0) {
+                            return subtask.subtasks.every(subSubtaskId => {
+                                const subSubtask = project.steps.find(s => s.id === subSubtaskId);
+                                return subSubtask && subSubtask.completed;
+                            });
+                        }
+                        
+                        return true;
+                    });
+                    
+                    if (!allChildrenCompleted) {
+                        this.showNotification('Cannot complete parent task until all subtasks and sub-subtasks are completed.', 'error');
+                        return;
+                    }
+                }
+                // For subtasks (level 1), check all sub-subtasks
+                else if (step.isSubtask && !step.isSubSubtask && step.subtasks && step.subtasks.length > 0) {
+                    const allSubSubtasksCompleted = step.subtasks.every(subSubtaskId => {
+                        const subSubtask = project.steps.find(s => s.id === subSubtaskId);
+                        return subSubtask && subSubtask.completed;
+                    });
+                    
+                    if (!allSubSubtasksCompleted) {
+                        this.showNotification('Cannot complete subtask until all sub-subtasks are completed.', 'error');
+                        return;
+                    }
+                }
+            }
+            
             step.completed = !step.completed;
             project.progress = this.calculateProgress(project.steps);
             
@@ -308,6 +414,117 @@ class StatusDashboard {
             this.saveToStorage();
             this.renderProjects();
         }
+    }
+
+    canCompleteParentTask(project, parentTask) {
+        // If it's not a parent task, it can always be completed
+        if (!parentTask.subtasks || parentTask.subtasks.length === 0) {
+            return true;
+        }
+        
+        // For parent tasks, all subtasks (and their sub-subtasks) must be completed
+        return parentTask.subtasks.every(subtaskId => {
+            const subtask = project.steps.find(step => step.id === subtaskId);
+            if (!subtask || !subtask.completed) {
+                return false;
+            }
+            
+            // If this subtask has sub-subtasks, check them too
+            if (subtask.subtasks && subtask.subtasks.length > 0) {
+                return subtask.subtasks.every(subSubtaskId => {
+                    const subSubtask = project.steps.find(step => step.id === subSubtaskId);
+                    return subSubtask && subSubtask.completed;
+                });
+            }
+            
+            return true;
+        });
+    }
+
+    parseStepsWithSubtasks(stepsText) {
+        if (!stepsText) return [];
+        
+        const lines = stepsText.split('\n').filter(line => line.trim());
+        const steps = [];
+        let currentParentIndex = -1;
+        let currentSubtaskIndex = -1;
+        
+        lines.forEach((line, index) => {
+            const trimmedLine = line.trim();
+            const isSubSubtask = trimmedLine.startsWith('++');
+            const isSubtask = !isSubSubtask && trimmedLine.startsWith('+');
+            
+            if (isSubSubtask) {
+                // This is a sub-subtask (++)
+                const subSubtaskText = trimmedLine.substring(2).trim(); // Remove '++' and trim
+                if (subSubtaskText && currentSubtaskIndex >= 0) {
+                    const subSubtaskId = `step-${Date.now()}-${index}`;
+                    const subSubtask = {
+                        id: subSubtaskId,
+                        text: subSubtaskText,
+                        completed: false,
+                        isSubtask: true,
+                        isSubSubtask: true,
+                        level: 2,
+                        parentId: steps[currentSubtaskIndex].id,
+                        rootParentId: steps[currentParentIndex].id
+                    };
+                    
+                    // Add sub-subtask to steps array
+                    steps.push(subSubtask);
+                    
+                    // Add sub-subtask reference to immediate parent (subtask)
+                    if (!steps[currentSubtaskIndex].subtasks) {
+                        steps[currentSubtaskIndex].subtasks = [];
+                    }
+                    steps[currentSubtaskIndex].subtasks.push(subSubtaskId);
+                }
+            } else if (isSubtask) {
+                // This is a subtask (+)
+                const subtaskText = trimmedLine.substring(1).trim(); // Remove '+' and trim
+                if (subtaskText && currentParentIndex >= 0) {
+                    const subtaskId = `step-${Date.now()}-${index}`;
+                    const subtask = {
+                        id: subtaskId,
+                        text: subtaskText,
+                        completed: false,
+                        isSubtask: true,
+                        isSubSubtask: false,
+                        level: 1,
+                        parentId: steps[currentParentIndex].id,
+                        subtasks: []
+                    };
+                    
+                    // Add subtask to steps array
+                    steps.push(subtask);
+                    currentSubtaskIndex = steps.length - 1;
+                    
+                    // Add subtask reference to parent
+                    if (!steps[currentParentIndex].subtasks) {
+                        steps[currentParentIndex].subtasks = [];
+                    }
+                    steps[currentParentIndex].subtasks.push(subtaskId);
+                }
+            } else {
+                // This is a parent task
+                const parentId = `step-${Date.now()}-${index}`;
+                const parentTask = {
+                    id: parentId,
+                    text: trimmedLine,
+                    completed: false,
+                    isSubtask: false,
+                    isSubSubtask: false,
+                    level: 0,
+                    subtasks: []
+                };
+                
+                steps.push(parentTask);
+                currentParentIndex = steps.length - 1;
+                currentSubtaskIndex = -1; // Reset subtask index when we hit a new parent
+            }
+        });
+        
+        return steps;
     }
 
     saveToStorage() {
@@ -478,47 +695,96 @@ class StatusDashboard {
             return '';
         }
         
-        const dependencyProjects = project.dependencies.map(depId => {
-            const depProject = this.projects.find(p => p.id === depId);
-            if (!depProject) {
-                // Check archived projects too
-                const archivedProjects = JSON.parse(localStorage.getItem('archivedProjects')) || [];
-                const archivedProject = archivedProjects.find(p => p.id === depId);
-                return archivedProject ? { ...archivedProject, isArchived: true } : null;
+        const dependencyItems = project.dependencies.map(depId => {
+            if (depId.startsWith('project:')) {
+                // Project dependency
+                const projectId = depId.replace('project:', '');
+                const depProject = this.projects.find(p => p.id === projectId);
+                if (!depProject) {
+                    // Check archived projects too
+                    const archivedProjects = JSON.parse(localStorage.getItem('archivedProjects')) || [];
+                    const archivedProject = archivedProjects.find(p => p.id === projectId);
+                    return archivedProject ? { ...archivedProject, isArchived: true, type: 'project' } : null;
+                }
+                return { ...depProject, type: 'project' };
+            } else if (depId.startsWith('task:')) {
+                // Task dependency
+                const [, projectId, taskId] = depId.split(':');
+                const depProject = this.projects.find(p => p.id === projectId) || 
+                    (JSON.parse(localStorage.getItem('archivedProjects')) || []).find(p => p.id === projectId);
+                if (depProject && depProject.steps) {
+                    const task = depProject.steps.find(s => s.id === taskId);
+                    if (task) {
+                        return {
+                            id: taskId,
+                            title: task.text,
+                            status: task.completed ? 'completed' : 'pending',
+                            type: 'task',
+                            projectTitle: depProject.title,
+                            isArchived: depProject.archivedAt ? true : false
+                        };
+                    }
+                }
+                return null;
+            } else {
+                // Legacy project dependency (backward compatibility)
+                const depProject = this.projects.find(p => p.id === depId);
+                if (!depProject) {
+                    const archivedProjects = JSON.parse(localStorage.getItem('archivedProjects')) || [];
+                    const archivedProject = archivedProjects.find(p => p.id === depId);
+                    return archivedProject ? { ...archivedProject, isArchived: true, type: 'project' } : null;
+                }
+                return { ...depProject, type: 'project' };
             }
-            return depProject;
         }).filter(Boolean);
         
-        if (dependencyProjects.length === 0) {
+        if (dependencyItems.length === 0) {
             return '';
         }
         
-        const hasUncompletedDeps = dependencyProjects.some(dep => 
-            !dep.isArchived && dep.status !== 'completed'
-        );
+        const hasUncompletedDeps = dependencyItems.some(dep => {
+            if (dep.type === 'project') {
+                return !dep.isArchived && dep.status !== 'completed';
+            } else if (dep.type === 'task') {
+                return dep.status !== 'completed' && !dep.isArchived;
+            }
+            return false;
+        });
         
         return `
             <div class="dependencies-container">
                 <div class="dependencies-header">
-                    <h4>📋 Dependencies</h4>
+                    <h4>Dependencies</h4>
                     <span class="dependencies-status ${hasUncompletedDeps ? 'blocked' : 'ready'}">
-                        ${hasUncompletedDeps ? '⚠️ Blocked' : '✅ Ready'}
+                        ${hasUncompletedDeps ? 'Blocked' : 'Ready'}
                     </span>
                 </div>
                 <div class="dependencies-list">
-                    ${dependencyProjects.map(dep => `
-                        <div class="dependency-item ${dep.isArchived ? 'archived' : dep.status}">
-                            <span class="dependency-status-icon">
-                                ${dep.isArchived ? '📦' : dep.status === 'completed' ? '✅' : 
-                                  dep.status === 'in-progress' ? '🔄' : 
-                                  dep.status === 'on-hold' ? '⏸️' : '⛔'}
-                            </span>
-                            <span class="dependency-title">${dep.title}</span>
-                            <span class="dependency-status-text">
-                                ${dep.isArchived ? 'Archived' : dep.status.replace('-', ' ')}
-                            </span>
-                        </div>
-                    `).join('')}
+                    ${dependencyItems.map(dep => {
+                        if (dep.type === 'project') {
+                            const statusText = dep.isArchived ? 'Archived' : dep.status.replace('-', ' ');
+                            const capitalizedStatusText = statusText.charAt(0).toUpperCase() + statusText.slice(1);
+                            return `
+                                <div class="dependency-item ${dep.isArchived ? 'archived' : dep.status}">
+                                    <span class="dependency-title">${dep.title} (Project)</span>
+                                    <span class="dependency-status-text">
+                                        ${capitalizedStatusText}
+                                    </span>
+                                </div>
+                            `;
+                        } else if (dep.type === 'task') {
+                            const capitalizedTaskTitle = dep.title.charAt(0).toUpperCase() + dep.title.slice(1);
+                            return `
+                                <div class="dependency-item ${dep.status} task-dependency">
+                                    <span class="dependency-title">${capitalizedTaskTitle} (Task from ${dep.projectTitle})</span>
+                                    <span class="dependency-status-text">
+                                        ${dep.status === 'completed' ? 'Completed' : 'Pending'}
+                                    </span>
+                                </div>
+                            `;
+                        }
+                        return '';
+                    }).join('')}
                 </div>
             </div>
         `;
@@ -537,24 +803,76 @@ class StatusDashboard {
         
         const completedSteps = project.steps.filter(step => step.completed).length;
         const totalSteps = project.steps.length;
+        const hasUnmetDependencies = this.hasUnmetDependencies(project);
         
         return `
             <div class="steps-header">
                 <h4>Project Steps</h4>
                 <span class="steps-count">${completedSteps}/${totalSteps} completed</span>
+                ${hasUnmetDependencies ? '<span class="blocked-indicator">🔒 Blocked</span>' : ''}
             </div>
             <div class="steps-list">
-                ${project.steps.map(step => `
-                    <div class="step-item ${step.completed ? 'completed' : ''}">
-                        <label class="step-checkbox">
-                            <input type="checkbox" 
-                                   ${step.completed ? 'checked' : ''} 
-                                   onchange="dashboard.toggleStep('${project.id}', '${step.id}')">
-                            <span class="checkmark"></span>
-                            <span class="step-text">${step.text}</span>
-                        </label>
-                    </div>
-                `).join('')}
+                ${project.steps.map(step => {
+                    const isSubtask = step.isSubtask && !step.isSubSubtask;
+                    const isSubSubtask = step.isSubSubtask;
+                    const isParentTask = !step.isSubtask && step.subtasks && step.subtasks.length > 0;
+                    const isSubtaskWithChildren = isSubtask && step.subtasks && step.subtasks.length > 0;
+                    
+                    // Check if this task can be completed based on its children
+                    let canComplete = true;
+                    let blockReason = '';
+                    
+                    // For parent tasks, check all subtasks and sub-subtasks
+                    if (isParentTask && !step.completed) {
+                        canComplete = this.canCompleteParentTask(project, step);
+                        if (!canComplete) {
+                            blockReason = 'Complete all subtasks first';
+                        }
+                    }
+                    // For subtasks with sub-subtasks, check all sub-subtasks
+                    else if (isSubtaskWithChildren && !step.completed) {
+                        canComplete = step.subtasks.every(subSubtaskId => {
+                            const subSubtask = project.steps.find(s => s.id === subSubtaskId);
+                            return subSubtask && subSubtask.completed;
+                        });
+                        if (!canComplete) {
+                            blockReason = 'Complete all sub-subtasks first';
+                        }
+                    }
+                    
+                    // Final disability check includes dependencies and child completion
+                    const isDisabled = (hasUnmetDependencies && !step.completed) || (!canComplete && !step.completed);
+                    
+                    // Add additional classes for sub-sub tasks
+                    let stepClasses = `step-item ${step.completed ? 'completed' : ''}`;
+                    if (isSubSubtask) {
+                        stepClasses += ' subtask sub-subtask';
+                    } else if (isSubtask) {
+                        stepClasses += ' subtask';
+                        if (isSubtaskWithChildren) {
+                            stepClasses += ' parent-subtask';
+                        }
+                    }
+                    if (isParentTask) {
+                        stepClasses += ' parent-task';
+                    }
+                    if (isDisabled) {
+                        stepClasses += ' blocked';
+                    }
+                    
+                    return `
+                        <div class="${stepClasses}" ${blockReason ? `title="${blockReason}"` : ''}>
+                            <label class="step-checkbox">
+                                <input type="checkbox" 
+                                       ${step.completed ? 'checked' : ''} 
+                                       ${isDisabled ? 'disabled' : ''}
+                                       onchange="dashboard.toggleStep('${project.id}', '${step.id}')">
+                                <span class="checkmark"></span>
+                                <span class="step-text">${step.text}</span>
+                            </label>
+                        </div>
+                    `;
+                }).join('')}
             </div>
         `;
     }

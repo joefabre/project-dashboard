@@ -102,15 +102,15 @@
                     <small style="color: #666; font-size: 0.85rem; display: block; margin-top: 0.5rem;">When all steps are completed, automatically reset all checkboxes and start over instead of archiving.</small>
                 </div>
                 <div class="form-group">
-                    <label for="project-dependencies">Project Dependencies:</label>
-                    <select id="project-dependencies" multiple size="3">
+                    <label for="project-dependencies">Dependencies:</label>
+                    <select id="project-dependencies" multiple size="5">
                         <!-- Options will be populated dynamically -->
                     </select>
-                    <small style="color: #666; font-size: 0.85rem;">Select other projects that must be completed before this one can start. Hold Ctrl/Cmd to select multiple.</small>
+                    <small style="color: #666; font-size: 0.85rem;">Select projects or specific tasks that must be completed before this project can start. Hold Ctrl/Cmd to select multiple.</small>
                 </div>
                 <div class="form-group">
                     <label for="project-steps">Project Steps:</label>
-                    <textarea id="project-steps" rows="4" placeholder="Enter each step on a new line&#10;Example:&#10;Research and planning&#10;Design mockups&#10;Develop prototype&#10;Testing and feedback&#10;Final implementation"></textarea>
+                    <textarea id="project-steps" rows="4" placeholder="Enter each step on a new line&#10;Use + for subtasks, ++ for sub-subtasks:&#10;Research and planning&#10;+ Market analysis&#10;++ Survey customers&#10;++ Analyze competitors&#10;+ User research&#10;Design mockups&#10;+ Create wireframes&#10;+ Design UI components&#10;++ Color scheme&#10;++ Typography&#10;Development&#10;+ Set up environment&#10;+ Implement features&#10;Testing and feedback&#10;Final implementation"></textarea>
                     <small style="color: #666; font-size: 0.85rem;">Enter each project step on a separate line. These will become checkboxes you can interact with to track progress.</small>
                 </div>
                 <div class="form-actions">

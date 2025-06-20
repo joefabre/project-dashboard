@@ -653,10 +653,6 @@ input:focus, textarea:focus, select:focus {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.dependency-status-icon {
-    font-size: 1rem;
-    flex-shrink: 0;
-}
 
 .dependency-title {
     flex: 1;
@@ -696,6 +692,17 @@ input:focus, textarea:focus, select:focus {
 .dependency-item.not-started .dependency-status-text {
     background: rgba(255, 234, 167, 0.3);
     color: #d63031;
+}
+
+/* Task dependency specific styles - simplified */
+.dependency-item.task-dependency {
+    margin-left: 0;
+    border-left: none;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.dependency-item.task-dependency .dependency-status-text {
+    font-size: 0.8rem;
 }
 
 /* Project Steps Styles */
@@ -817,6 +824,31 @@ input:focus, textarea:focus, select:focus {
 
 .step-checkbox:focus-within .checkmark {
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+/* Blocked task styles */
+.step-item.blocked {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.step-item.blocked .step-text {
+    color: #999;
+}
+
+.step-item.blocked .checkmark {
+    border-color: #ddd;
+    background: #f5f5f5;
+}
+
+.blocked-indicator {
+    font-size: 0.75rem;
+    background: rgba(214, 48, 49, 0.1);
+    color: #d63031;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    margin-left: 0.5rem;
 }
 
 /* Archived Project Card Styles */

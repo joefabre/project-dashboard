@@ -653,10 +653,6 @@ input:focus, textarea:focus, select:focus {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.dependency-status-icon {
-    font-size: 1rem;
-    flex-shrink: 0;
-}
 
 .dependency-title {
     flex: 1;
@@ -696,6 +692,17 @@ input:focus, textarea:focus, select:focus {
 .dependency-item.not-started .dependency-status-text {
     background: rgba(255, 234, 167, 0.3);
     color: #d63031;
+}
+
+/* Task dependency specific styles - simplified */
+.dependency-item.task-dependency {
+    margin-left: 0;
+    border-left: none;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.dependency-item.task-dependency .dependency-status-text {
+    font-size: 0.8rem;
 }
 
 /* Project Steps Styles */
@@ -817,6 +824,220 @@ input:focus, textarea:focus, select:focus {
 
 .step-checkbox:focus-within .checkmark {
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+/* Blocked task styles */
+.step-item.blocked {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.step-item.blocked .step-text {
+    color: #999;
+}
+
+.step-item.blocked .checkmark {
+    border-color: #ddd;
+    background: #f5f5f5;
+}
+
+.blocked-indicator {
+    font-size: 0.75rem;
+    background: rgba(214, 48, 49, 0.1);
+    color: #d63031;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+/* Subtask styles */
+.step-item.subtask {
+    margin-left: 1.5rem;
+    position: relative;
+    border-left: 2px solid rgba(102, 126, 234, 0.3);
+    padding-left: 0.75rem;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.step-item.subtask::before {
+    content: '+';
+    position: absolute;
+    left: -0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1rem;
+    height: 1rem;
+    background: rgba(102, 126, 234, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: #667eea;
+    font-weight: bold;
+}
+
+.step-item.subtask .step-checkbox {
+    font-size: 0.85rem;
+}
+
+.step-item.subtask .checkmark {
+    width: 16px;
+    height: 16px;
+    border-width: 1px;
+}
+
+.step-item.subtask .step-text {
+    color: #555;
+    font-size: 0.85rem;
+}
+
+/* Parent task styles */
+.step-item.parent-task {
+    background: rgba(102, 126, 234, 0.08);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    border-radius: 6px;
+    padding: 0.5rem;
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+}
+
+.step-item.parent-task .step-text {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.step-item.parent-task .checkmark {
+    border-width: 2px;
+    border-color: #667eea;
+}
+
+/* Parent subtask styles (subtasks that have sub-subtasks) */
+.step-item.parent-subtask {
+    background: rgba(102, 126, 234, 0.12);
+    border: 1px solid rgba(102, 126, 234, 0.25);
+    border-radius: 4px;
+    padding: 0.4rem;
+    font-weight: 600;
+}
+
+.step-item.parent-subtask .step-text {
+    font-weight: 600;
+    color: #4a5568;
+}
+
+.step-item.parent-subtask .checkmark {
+    border-width: 2px;
+    border-color: #667eea;
+}
+
+/* Parent task that cannot be completed (has incomplete subtasks) */
+.step-item.parent-task.blocked:not(.completed) {
+    opacity: 0.7;
+}
+
+.step-item.parent-task.blocked:not(.completed) .checkmark {
+    border-color: #ddd;
+    background: #f8f9fa;
+}
+
+.step-item.parent-task.blocked:not(.completed) .step-text {
+    color: #999;
+}
+
+/* Subtask spacing when following parent */
+.step-item.parent-task + .step-item.subtask {
+    margin-top: 0.25rem;
+}
+
+/* Last subtask in a group */
+.step-item.subtask:not(:has(+ .step-item.subtask)) {
+    margin-bottom: 0.5rem;
+}
+
+/* Visual connection line for subtasks */
+.step-item.subtask:not(:last-child) {
+    border-left: 2px solid rgba(102, 126, 234, 0.3);
+}
+
+.step-item.subtask:last-child {
+    border-left: 2px solid rgba(102, 126, 234, 0.3);
+    border-bottom-left-radius: 6px;
+}
+
+/* Sub-subtask styles (level 2 - ++) */
+.step-item.sub-subtask {
+    margin-left: 3rem; /* Deeper indentation than subtasks */
+    border-left: 2px solid rgba(118, 75, 162, 0.4);
+    background: rgba(118, 75, 162, 0.08);
+    padding-left: 0.75rem;
+}
+
+.step-item.sub-subtask::before {
+    content: '++';
+    position: absolute;
+    left: -0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1rem;
+    height: 1rem;
+    background: rgba(118, 75, 162, 0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    color: #764ba2;
+    font-weight: bold;
+}
+
+.step-item.sub-subtask .step-checkbox {
+    font-size: 0.8rem;
+}
+
+.step-item.sub-subtask .checkmark {
+    width: 14px;
+    height: 14px;
+    border-width: 1px;
+    border-color: #764ba2;
+}
+
+.step-item.sub-subtask .step-text {
+    color: #666;
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+/* Sub-subtask checked state */
+.step-item.sub-subtask .step-checkbox input[type="checkbox"]:checked + .checkmark {
+    background: linear-gradient(45deg, #764ba2, #667eea);
+    border-color: #764ba2;
+}
+
+/* Spacing for sub-subtasks */
+.step-item.subtask + .step-item.sub-subtask {
+    margin-top: 0.25rem;
+}
+
+.step-item.sub-subtask:not(:has(+ .step-item.sub-subtask)) {
+    margin-bottom: 0.5rem;
+}
+
+/* Visual hierarchy improvements */
+.step-item.parent-task {
+    position: relative;
+    z-index: 3;
+}
+
+.step-item.subtask:not(.sub-subtask) {
+    position: relative;
+    z-index: 2;
+}
+
+.step-item.sub-subtask {
+    position: relative;
+    z-index: 1;
 }
 
 /* Archived Project Card Styles */
