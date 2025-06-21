@@ -2,6 +2,10 @@
 
 A modern, responsive web application for tracking project status and progress with interactive charts and real-time updates.
 
+## 🚀 Live Demo
+
+**Try it now**: [https://joefabre.github.io/project-dashboard/](https://joefabre.github.io/project-dashboard/)
+
 ## Features ✨
 
 - **Interactive Project Cards** - Create, edit, and delete project cards with detailed information
