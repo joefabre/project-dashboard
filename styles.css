@@ -208,6 +208,79 @@ main {
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+/* Project Card Styles */
+.project-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Collapsible Card Styles */
+.project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+
+.project-content {
+    transition: all 0.3s ease;
+    max-height: 2000px;
+    opacity: 1;
+    overflow: hidden;
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.project-card.collapsed .project-content {
+    max-height: 0;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
+}
+
+/* Collapsed Summary Styles */
+.collapsed-summary {
+    display: none;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.project-card.collapsed .collapsed-summary {
+    display: block;
+}
+
+.collapsed-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.collapsed-progress {
+    color: #667eea;
+    font-weight: 600;
+}
+
+.collapsed-due {
+    color: #636e72;
+    font-weight: 500;
+}
+
 .project-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);

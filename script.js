@@ -635,7 +635,10 @@ class StatusDashboard {
             return;
         }
 
-        container.innerHTML = this.projects.map(project => this.createProjectCard(project)).join('');
+        // Sort projects: "in-progress" first, then "not-started", then by due date within each group
+        const sortedProjects = this.sortProjectsByStatusAndDueDate(this.projects);
+        
+        container.innerHTML = sortedProjects.map(project => this.createProjectCard(project)).join('');
         
         // Update ticker with new project stats when projects are rendered
         this.updateTickerStats();
@@ -655,37 +658,41 @@ class StatusDashboard {
                     </div>
                 </div>
                 
-                <div class="project-details">${project.details}</div>
-                
-                <div class="project-dates">
-                    <span><strong>Start:</strong> ${this.formatDate(project.startDate)}</span>
-                    <span><strong>Due:</strong> ${this.formatDate(project.dueDate)} (${daysUntilDue})</span>
-                </div>
-                
-                ${this.renderProjectDependencies(project)}
-                
-                <div class="progress-section">
-                    <div class="progress-label">
-                        <span>Progress</span>
-                        <span>${project.progress}%</span>
+                <div class="project-content">
+                    <div class="project-details">${project.details}</div>
+                    
+                    <div class="project-dates">
+                        <span><strong>Start:</strong> ${this.formatDate(project.startDate)}</span>
+                        <span><strong>Due:</strong> ${this.formatDate(project.dueDate)} (${daysUntilDue})</span>
                     </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${project.progress}%"></div>
+                    
+                    ${this.renderProjectDependencies(project)}
+                    
+                    <div class="progress-section">
+                        <div class="progress-label">
+                            <span>Progress</span>
+                            <span>${project.progress}%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${project.progress}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="steps-container">
+                        ${this.renderProjectSteps(project)}
+                    </div>
+                    
+                    <div class="project-actions">
+                        <button class="btn-small btn-edit" onclick="dashboard.openModal('${project.id}')">
+                            ✏️ Edit
+                        </button>
+                        <button class="btn-small btn-delete" onclick="dashboard.deleteProject('${project.id}')">
+                            🗑️ Delete
+                        </button>
                     </div>
                 </div>
                 
-                <div class="steps-container">
-                    ${this.renderProjectSteps(project)}
-                </div>
-                
-                <div class="project-actions">
-                    <button class="btn-small btn-edit" onclick="dashboard.openModal('${project.id}')">
-                        ✏️ Edit
-                    </button>
-                    <button class="btn-small btn-delete" onclick="dashboard.deleteProject('${project.id}')">
-                        🗑️ Delete
-                    </button>
-                </div>
+            </div>
             </div>
         `;
     }
@@ -1529,6 +1536,36 @@ class StatusDashboard {
                 <div class="progress-text">${project.progress || 0}% Complete</div>
             </div>
         `;
+    }
+    
+    
+    sortProjectsByStatusAndDueDate(projects) {
+        // Create a copy of the projects array to avoid mutating the original
+        const projectsCopy = [...projects];
+        
+        // Define the priority order for statuses
+        const statusPriority = {
+            'in-progress': 1,
+            'not-started': 2,
+            'on-hold': 3,
+            'completed': 4
+        };
+        
+        return projectsCopy.sort((a, b) => {
+            // First, sort by status priority (in-progress first, then not-started)
+            const statusPriorityA = statusPriority[a.status] || 999;
+            const statusPriorityB = statusPriority[b.status] || 999;
+            
+            if (statusPriorityA !== statusPriorityB) {
+                return statusPriorityA - statusPriorityB;
+            }
+            
+            // If statuses are the same, sort by due date (earliest first)
+            const dueDateA = new Date(a.dueDate);
+            const dueDateB = new Date(b.dueDate);
+            
+            return dueDateA - dueDateB;
+        });
     }
     
     showNotification(message, type = 'info') {
